@@ -1,0 +1,39 @@
+name: Auto Patch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Patch:
+    runs-on: ubuntu-latest
+    
+    steps:
+      #- uses: actions/checkout@v3
+
+      - name: Clone LSPosed/MagiskOnWSALocal
+        run: |
+          git clone https://github.com/LSPosed/MagiskOnWSALocal
+          
+      - name: Install dependencies  
+        run: ./MagiskOnWSALocal/scripts/install_deps.sh
+        
+      - name: Build WSA with Magisk
+        run: ./MagiskOnWSALocal/scripts/build.sh --release-type WIF --gapps-brand OpenGApps --remove-amazon 
+        
+      - name: Patch WSA
+        run: |
+          cd ./MagiskOnWSALocal/output/*/WsaClient
+          wget $((curl https://api.github.com/repos/cinit/WSAPatch/releases/latest -s | grep -o '"browser_download_url": "[^"]*') | grep -o '[^"]*$')
+          p7zip -d *.7z
+          cd ..
+          ((sed 's/Name="Windows.Desktop" MinVersion="[0-9\.]*"/Name="Windows.Desktop" MinVersion="10.0.19045.2311"/g' AppxManifest.xml ) | sed 's/.*Name="customInstallActions.*//g' ) | sed '/    <desktop6:Extension Category="windows.customInstall">/,/    <\/desktop6:Extension>/d' >> tmp.xml
+          rm AppxManifest.xml
+          mv tmp.xml AppxManifest.xml
+          cd ..
+          
+      - name: Upload
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: PatchedWsaWithMagisk
+          path: MagiskOnWSALocal/output
+        

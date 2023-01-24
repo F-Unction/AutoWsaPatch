@@ -18,7 +18,7 @@ jobs:
         run: ./MagiskOnWSALocal/scripts/install_deps.sh
         
       - name: Build WSA with Magisk
-        run: ./MagiskOnWSALocal/scripts/build.sh --release-type WIS --gapps-brand OpenGApps --remove-amazon 
+        run: ./MagiskOnWSALocal/scripts/build.sh --release-type RP --gapps-brand OpenGApps --remove-amazon 
         
       - name: Patch WSA
         run: |
